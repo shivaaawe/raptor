@@ -2,6 +2,7 @@
 
 <div align="center">
 
+![Raptor Logo](raptor_logo.png)
 
 [![Python Version](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -28,6 +29,34 @@ RAPTOR (Rapid API Threat Observer & Reporter) is a Python-based malware analysis
 
 ## 🛠️ Installation
 
+### Automatic Installation (Recommended)
+
+1. Clone the repository:
+```bash
+git clone https://github.com/shivaaawe/raptor.git
+```
+
+2. Navigate to the raptor directory:
+```bash
+cd raptor
+```
+
+3. Run the installation script:
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+The installation script will:
+- Install all required dependencies
+- Set up the tool in your system
+- Add raptor to your system PATH
+- Make the tool executable
+
+### Manual Installation (Alternative)
+
+If you prefer to install manually:
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/shivaaawe/raptor.git
@@ -39,15 +68,21 @@ cd raptor
 pip install -r requirements.txt
 ```
 
-3. Make the script executable (Linux/Mac):
+3. Make the script executable:
 ```bash
 chmod +x raptor
+```
+
+4. Add to PATH (optional):
+```bash
+echo "export PATH=\$PATH:$(pwd)" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## 📦 Requirements
 
 - Python 3.6+
-- Required Python packages:
+- Required Python packages (automatically installed):
   - requests
   - beautifulsoup4
   - rich
@@ -105,6 +140,31 @@ RAPTOR uses a caching system to store API information for faster subsequent anal
 - Windows: `C:\Users\<username>\AppData\Local\raptor-analyzer\Cache`
 - macOS: `~/Library/Caches/raptor-analyzer/`
 
+## ⚡ Troubleshooting
+
+If you encounter any issues during installation:
+
+1. Make sure you have Python 3.6+ installed:
+```bash
+python3 --version
+```
+
+2. Verify the installation:
+```bash
+raptor -h
+```
+
+3. If the command is not found after installation, try:
+```bash
+source ~/.bashrc
+```
+
+4. For permission issues:
+```bash
+sudo chmod +x install.sh
+sudo ./install.sh
+```
+
 ## ⚠️ Disclaimer
 
 This tool is intended for security research and malware analysis purposes only. Do not use it to analyze files unless you have explicit permission to do so. The authors are not responsible for any misuse of this tool.
@@ -133,3 +193,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 shivaaawe - [@shivaaawe](https://github.com/shivaaawe)
 
 Project Link: [https://github.com/shivaaawe/raptor](https://github.com/shivaaawe/raptor)
+
+## 🔄 Updates and Future Features
+
+Stay tuned for upcoming features and improvements! Feel free to suggest new features by opening an issue.
