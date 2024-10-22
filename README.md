@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Raptor Logo](raptor_logo.png)
+![Raptor Logo](https://drive.google.com/file/d/1cJPPUQ1EjRiBWpYpKdmpMO06iDstyR7a/view?usp=sharing)
 
 [![Python Version](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
