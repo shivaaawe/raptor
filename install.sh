@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Check if the script is run as root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root."
@@ -16,24 +15,27 @@ fi
 echo "Creating virtual environment..."
 python3 -m venv /opt/raptor_venv
 
-# Activate the virtual environment
-source /opt/raptor_venv/bin/activate
-
 # Install Python dependencies in the virtual environment
 echo "Installing dependencies..."
-/opt/raptor_venv/bin/pip3 install -r requirements.txt
+/opt/raptor_venv/bin/pip3 install requests beautifulsoup4 rich pefile appdirs
+
+# Create a wrapper script for the raptor command
+echo "Creating the wrapper script..."
+cat > /usr/local/bin/raptor << 'EOF'
+#!/bin/bash
+# Activate the virtual environment and run the raptor.py script
+source /opt/raptor_venv/bin/activate
+python3 /usr/local/bin/raptor.py "$@"
+EOF
+
+# Make the wrapper script executable
+chmod +x /usr/local/bin/raptor
 
 # Make the raptor.py script executable
 chmod +x raptor.py
 
 # Copy the raptor.py to /usr/local/bin
-cp raptor.py /usr/local/bin
-
-# Create a symlink to make 'raptor' command available
-ln -s /usr/local/bin/raptor.py /usr/local/bin/raptor
-
-# Deactivate the virtual environment
-deactivate
+cp raptor.py /usr/local/bin/raptor.py
 
 echo "Raptor CLI Tool has been installed in a virtual environment at /opt/raptor_venv."
 echo "To run it, simply use 'raptor' from the terminal."
