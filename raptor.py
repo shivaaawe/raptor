@@ -14,6 +14,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import appdirs
 import pathlib
+import sys
 
 console = Console()
 
@@ -61,6 +62,7 @@ def extract_apis_from_executable(file_path):
     except Exception as e:
         console.print(f"[red]Error analyzing executable: {str(e)}[/red]")
         return set()
+
 def get_cache_path():
     """Get the appropriate cache file path for the system"""
     cache_dir = pathlib.Path(appdirs.user_cache_dir("raptor-analyzer"))
@@ -212,18 +214,36 @@ def print_banner():
     console.print(Panel(banner, title="Raptor Malware Analyzer", expand=False))
 
 def main():
-    parser = argparse.ArgumentParser(
+    # Print banner first, before any argument parsing
+    print_banner()
+    
+    # Custom ArgumentParser class to preserve the banner when showing help
+    class RaptorArgumentParser(argparse.ArgumentParser):
+        def print_help(self, *args, **kwargs):
+            # Parent's print_help is called after banner is already displayed
+            super().print_help(*args, **kwargs)
+    
+    parser = RaptorArgumentParser(
         description="Raptor Malware Analyzer - Rapid API Threat Observer & Reporter",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         prog="raptor"  # This ensures the correct tool name in help message
     )
-    parser.add_argument("file_path", help="Path to the executable file to analyze")
+    parser.add_argument("file_path", nargs="?", help="Path to the executable file to analyze")
     parser.add_argument("--output", help="Output file to save the analysis results")
-    parser.add_argument("--cache", default="raptor_cache.json", help="Cache file for API data")
+    parser.add_argument("--cache", default=str(get_cache_path()), help="Cache file for API data")
     parser.add_argument("--max-workers", type=int, default=20, help="Maximum number of worker threads")
+    
+    # Check if no arguments were passed (just 'raptor' command)
+    if len(sys.argv) == 1:
+        parser.print_help()
+        return
+        
     args = parser.parse_args()
-
-    print_banner()
+    
+    # Make sure file_path is provided for analysis operations
+    if not args.file_path:
+        parser.print_help()
+        return
 
     if os.path.exists(args.file_path):
         start_time = time.time()
