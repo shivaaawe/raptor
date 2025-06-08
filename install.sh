@@ -1,41 +1,87 @@
 #!/bin/bash
-# Check if the script is run as root
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root."
-   exit 1
+
+# Raptor Malware Analyzer Installer
+# By SHIVA SAI REDDY MIKKILI
+
+echo "Installing Raptor Malware Analyzer..."
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Check if Python 3 is installed
+if command -v python3 &>/dev/null; then
+    echo "Python 3 found."
+else
+    echo "Python 3 is required but not found. Please install Python 3 and try again."
+    exit 1
 fi
 
-# Check if python3-venv is installed (needed for virtual environments)
-if ! dpkg -l | grep -q python3-venv; then
-    echo "python3-venv is not installed. Installing it now..."
-    apt update && apt install -y python3-venv
+# Create a virtual environment
+echo "Creating a virtual environment for Raptor..."
+if python3 -m venv .venv; then
+    echo "Virtual environment created successfully."
+else
+    echo "Failed to create virtual environment. Installing python3-venv if needed..."
+    sudo apt install -y python3-venv
+    python3 -m venv .venv || {
+        echo "Failed to create virtual environment. Please check your Python installation."
+        exit 1
+    }
 fi
 
-# Create a virtual environment for Raptor in /opt/raptor_venv
-echo "Creating virtual environment..."
-python3 -m venv /opt/raptor_venv
+# Activate the virtual environment
+source .venv/bin/activate
 
-# Install Python dependencies in the virtual environment
-echo "Installing dependencies..."
-/opt/raptor_venv/bin/pip3 install requests beautifulsoup4 rich pefile appdirs
+# Install dependencies
+echo "Installing dependencies in the virtual environment..."
+pip install -r requirements.txt || {
+    echo "Failed to install dependencies. Please check your internet connection and try again."
+    exit 1
+}
 
-# Create a wrapper script for the raptor command
-echo "Creating the wrapper script..."
-cat > /usr/local/bin/raptor << 'EOF'
-#!/bin/bash
-# Activate the virtual environment and run the raptor.py script
-source /opt/raptor_venv/bin/activate
-python3 /usr/local/bin/raptor.py "$@"
-EOF
-
-# Make the wrapper script executable
-chmod +x /usr/local/bin/raptor
-
-# Make the raptor.py script executable
+# Make the main script executable
 chmod +x raptor.py
 
-# Copy the raptor.py to /usr/local/bin
-cp raptor.py /usr/local/bin/raptor.py
+# Create a wrapper script to run raptor from anywhere
+echo "Creating wrapper script..."
+cat > raptor-wrapper.sh << 'EOF'
+#!/bin/bash
 
-echo "Raptor CLI Tool has been installed in a virtual environment at /opt/raptor_venv."
-echo "To run it, simply use 'raptor' from the terminal."
+# Get the actual directory where this script is located (resolving symlinks)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+# Activate the virtual environment
+source "$SCRIPT_DIR/.venv/bin/activate"
+
+# Run raptor with all arguments passed to this script
+python "$SCRIPT_DIR/raptor.py" "$@"
+EOF
+
+chmod +x raptor-wrapper.sh
+
+# Create symbolic link for local use only
+if sudo mkdir -p /usr/local/bin/ 2>/dev/null; then
+    echo "Creating a symbolic link in /usr/local/bin..."
+    FULL_PATH="$(readlink -f "$(pwd)/raptor-wrapper.sh")"
+    sudo ln -sf "$FULL_PATH" /usr/local/bin/raptor || {
+        echo "Failed to create a symbolic link. You may need to run this script with sudo."
+        echo "You can still run Raptor using './raptor-wrapper.sh' from this directory."
+    }
+else
+    echo "Cannot create directory in /usr/local/bin. You can run Raptor using './raptor-wrapper.sh' from this directory."
+fi
+
+echo "Installation complete!"
+echo "You can now run Raptor using 'raptor' or './raptor-wrapper.sh [options] file_to_analyze'"
+echo ""
+echo "To use Raptor in this terminal session, run:"
+echo "  source .venv/bin/activate"
+echo ""
+echo "For help, run 'raptor --help'"
