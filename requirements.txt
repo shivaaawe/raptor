@@ -1,5 +1,5 @@
-requests
-beautifulsoup4
-rich
-pefile
-appdirs
+appdirs>=1.4.4
+beautifulsoup4>=4.9.3
+pefile>=2021.5.24
+requests>=2.25.1
+rich>=10.1.0
